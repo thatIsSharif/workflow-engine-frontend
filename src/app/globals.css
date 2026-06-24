@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Workflow status colors */
+.status-DRAFT,
+.status-PENDING,
+.status-REQUESTED {
+  @apply bg-gray-100 text-gray-700 border-gray-300;
+}
+.status-OFFICER_REVIEW,
+.status-CONTROLLER_REVIEW,
+.status-HEAD_APPROVAL,
+.status-ADMIN_REVIEW,
+.status-CONTROLLER_APPROVAL,
+.status-FINANCE_CONFIRMATION,
+.status-UNDER_REVIEW {
+  @apply bg-blue-50 text-blue-700 border-blue-300;
+}
+.status-APPROVED {
+  @apply bg-green-50 text-green-700 border-green-300;
+}
+.status-REJECTED {
+  @apply bg-red-50 text-red-700 border-red-300;
+}
+.status-SIGNED,
+.status-COMPLETED {
+  @apply bg-emerald-50 text-emerald-700 border-emerald-300;
+}
+
+/* Badge variants */
+.badge-pro {
+  @apply bg-purple-50 text-purple-700 border-purple-300;
+}
+.badge-officer {
+  @apply bg-amber-50 text-amber-700 border-amber-300;
+}
+.badge-controller {
+  @apply bg-cyan-50 text-cyan-700 border-cyan-300;
+}
+.badge-head {
+  @apply bg-indigo-50 text-indigo-700 border-indigo-300;
+}
+.badge-admin {
+  @apply bg-rose-50 text-rose-700 border-rose-300;
+}
+.badge-finance {
+  @apply bg-teal-50 text-teal-700 border-teal-300;
+}
+.badge-user {
+  @apply bg-slate-50 text-slate-700 border-slate-300;
+}
+
