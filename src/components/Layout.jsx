@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { api, setUserId, getUserId } from '../api';
+import ThemeToggle from './ThemeToggle';
 
 const ENTITIES = [
   { key: 'noc', label: 'NOC' },
@@ -54,6 +55,9 @@ export default function Layout() {
               </option>
             ))}
           </select>
+        </div>
+        <div className="theme-switcher">
+          <ThemeToggle />
         </div>
       </aside>
       <main className="main-content">
