@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { api, setUserId, getUserId } from '../api';
+import { useTheme } from './ThemeContext';
 
 const ENTITIES = [
   { key: 'noc', label: 'NOC' },
@@ -14,6 +15,7 @@ export default function Layout() {
   const [users, setUsers] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(getUserId());
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     api.listUsers().then(setUsers).catch(() => {});
@@ -55,6 +57,9 @@ export default function Layout() {
             ))}
           </select>
         </div>
+        <button className="theme-toggle" onClick={toggleTheme}>
+          {theme === 'light' ? '🌙' : '☀️'} {theme === 'light' ? 'Dark' : 'Light'} Mode
+        </button>
       </aside>
       <main className="main-content">
         <Outlet />
