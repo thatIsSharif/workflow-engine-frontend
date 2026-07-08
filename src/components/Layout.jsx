@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { api, setUserId, getUserId } from '../api';
+import ThemeToggle from './ThemeToggle';
 
 const ENTITIES = [
   { key: 'noc', label: 'NOC' },
@@ -45,6 +46,7 @@ export default function Layout() {
             </NavLink>
           ))}
         </nav>
+        <ThemeToggle />
         <div className="user-switcher">
           <label>User:</label>
           <select value={currentUserId} onChange={handleUserChange}>
