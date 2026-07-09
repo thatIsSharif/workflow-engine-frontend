@@ -346,3 +346,184 @@ code { font-family: 'SF Mono', Monaco, monospace; font-size: 0.8rem; }
   background: var(--color-bg);
   color: var(--color-text);
 }
+
+/* High contrast theme */
+.high-contrast-theme {
+  --color-bg: #000000;
+  --color-sidebar: #000000;
+  --color-primary: #ffff00;
+  --color-success: #00ff00;
+  --color-warning: #ffa500;
+  --color-danger: #ff0000;
+  --color-info: #00ffff;
+  --color-text: #ffffff;
+  --color-text-light: #cccccc;
+  --color-border: #ffffff;
+}
+
+.high-contrast-theme,
+.high-contrast-theme body {
+  background: #000000;
+  color: #ffffff;
+}
+
+.high-contrast-theme .sidebar {
+  background: #000000;
+  border-right: 3px solid #ffffff;
+}
+
+.high-contrast-theme .nav-item {
+  color: #ffffff;
+  border: 2px solid transparent;
+}
+
+.high-contrast-theme .nav-item:hover {
+  background: #333333;
+  border-color: #ffffff;
+}
+
+.high-contrast-theme .nav-item.active {
+  background: #000000;
+  color: #ffff00;
+  border: 3px solid #ffff00;
+}
+
+.high-contrast-theme .user-switcher {
+  border-top: 3px solid #ffffff;
+}
+
+.high-contrast-theme .user-switcher label {
+  color: #ffffff;
+}
+
+.high-contrast-theme .user-switcher select {
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+}
+
+.high-contrast-theme .theme-switcher {
+  border-top: 3px solid #ffffff;
+}
+
+.high-contrast-theme .theme-toggle {
+  border: 3px solid #ffffff;
+  color: #ffffff;
+}
+
+.high-contrast-theme .theme-toggle:hover {
+  background: #333333;
+}
+
+.high-contrast-theme .card {
+  background: #000000;
+  border: 3px solid #ffffff;
+}
+
+.high-contrast-theme .data-table {
+  background: #000000;
+  border: 3px solid #ffffff;
+}
+
+.high-contrast-theme .data-table th {
+  background: #111111;
+  border-bottom: 3px solid #ffffff;
+}
+
+.high-contrast-theme .data-table td {
+  border-bottom: 2px solid #555555;
+}
+
+.high-contrast-theme .data-table tr:hover td {
+  background: #222222;
+}
+
+.high-contrast-theme .tab {
+  background: #000000;
+  border: 2px solid #ffffff;
+  color: #ffffff;
+}
+
+.high-contrast-theme .tab:hover {
+  background: #333333;
+}
+
+.high-contrast-theme .tab.active {
+  background: #ffff00;
+  color: #000000;
+  border-color: #ffff00;
+}
+
+.high-contrast-theme .form-group input {
+  background: #000000;
+  border: 2px solid #ffffff;
+  color: #ffffff;
+}
+
+.high-contrast-theme .btn {
+  background: #000000;
+  border: 2px solid #ffffff;
+  color: #ffffff;
+}
+
+.high-contrast-theme .btn:hover {
+  background: #333333;
+}
+
+.high-contrast-theme .summary-card {
+  background: #000000;
+  border: 3px solid #ffffff;
+}
+
+.high-contrast-theme .activity-feed {
+  background: #000000;
+  border: 3px solid #ffffff;
+}
+
+.high-contrast-theme .activity-item {
+  border-bottom: 2px solid #555555;
+}
+
+.high-contrast-theme .detail-table th {
+  background: #111111;
+  border-bottom: 3px solid #ffffff;
+}
+
+.high-contrast-theme .detail-table td {
+  border-bottom: 2px solid #555555;
+}
+
+.high-contrast-theme .entity-id {
+  background: #333333;
+  border: 1px solid #ffffff;
+}
+
+.high-contrast-theme .pagination button {
+  background: #000000;
+  border: 2px solid #ffffff;
+  color: #ffffff;
+}
+
+.high-contrast-theme .pagination button:hover:not(:disabled) {
+  background: #333333;
+}
+
+.high-contrast-theme .toast {
+  border: 2px solid #ffffff;
+  box-shadow: none;
+}
+
+.high-contrast-theme .status-badge {
+  border: 2px solid currentColor;
+}
+
+.high-contrast-theme .history-timeline {
+  border-left: 3px solid #ffffff;
+}
+
+.high-contrast-theme .history-item::before {
+  background: #ffff00;
+  width: 12px;
+  height: 12px;
+  left: -7px;
+}

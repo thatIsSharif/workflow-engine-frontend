@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 
 const THEME_KEY = 'theme';
+const THEMES = ['light', 'dark', 'high-contrast'];
+const ICONS = { 'light': '🌙', 'dark': '☀️', 'high-contrast': '♿' };
+const LABELS = { 'light': 'dark', 'dark': 'high-contrast', 'high-contrast': 'light' };
 
 export default function ThemeToggle() {
   const [theme, setTheme] = useState(() => {
-    // Check localStorage first
     const saved = localStorage.getItem(THEME_KEY);
-    if (saved) return saved;
-    // Check system preference
+    if (saved && THEMES.includes(saved)) return saved;
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       return 'dark';
     }
@@ -15,28 +16,28 @@ export default function ThemeToggle() {
   });
 
   useEffect(() => {
-    // Apply theme to root element
     const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark-theme');
-    } else {
-      root.classList.remove('dark-theme');
+    root.classList.remove('dark-theme', 'high-contrast-theme');
+    if (theme !== 'light') {
+      root.classList.add(`${theme}-theme`);
     }
-    // Save to localStorage
     localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+    setTheme(prev => {
+      const idx = THEMES.indexOf(prev);
+      return THEMES[(idx + 1) % THEMES.length];
+    });
   };
 
   return (
     <button
       className="theme-toggle"
       onClick={toggleTheme}
-      title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+      title={`Switch to ${LABELS[theme]} mode`}
     >
-      {theme === 'light' ? '🌙' : '☀️'}
+      {ICONS[theme]}
     </button>
   );
 }
