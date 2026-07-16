@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { useGSAP } from "@gsap/react";
+import { gsap } from "gsap";
 import { useUser } from "@/store/user-store";
 import { MODULE_CONFIG, type ModuleSlug } from "@/lib/types";
 import {
   LayoutDashboard, FileCheck, FileText, DollarSign, Home, XCircle,
-  UserCircle, Menu, X, ChevronLeft,
+  UserCircle, Menu, X,
 } from "lucide-react";
+import { safeAnim, prefersReducedMotion } from "@/lib/gsap-utils";
 
 const iconMap: Record<string, React.ElementType> = {
   FileCheck, FileText, DollarSign, Home, XCircle,
@@ -22,10 +24,80 @@ const links: { href: string; label: string; icon: React.ElementType }[] = [
   ),
 ];
 
+function MobileDrawer({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      requestAnimationFrame(() => setShow(true));
+    } else {
+      setShow(false);
+    }
+  }, [open]);
+
+  useGSAP(() => {
+    if (!mounted) return;
+    const reduced = prefersReducedMotion();
+    const tl = gsap.timeline({
+      onReverseComplete: () => { if (!open) setMounted(false); },
+    });
+
+    if (show) {
+      tl.to(overlayRef.current, {
+        opacity: 1, duration: reduced ? 0 : 0.2, ease: "power2.out",
+      });
+      tl.to(panelRef.current, {
+        x: 0, duration: reduced ? 0 : 0.3, ease: "power3.out",
+      }, "-=0.1");
+    } else {
+      tl.to(panelRef.current, {
+        x: -280, duration: reduced ? 0 : 0.25, ease: "power2.in",
+      });
+      tl.to(overlayRef.current, {
+        opacity: 0, duration: reduced ? 0 : 0.15, ease: "power2.in",
+      }, "-=0.05");
+    }
+  }, [mounted, show]);
+
+  if (!mounted) return null;
+
+  return (
+    <>
+      <div
+        ref={overlayRef}
+        onClick={onClose}
+        className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+        style={{ opacity: 0 }}
+      />
+      <aside
+        ref={panelRef}
+        className="fixed inset-y-0 left-0 z-50 w-72 lg:hidden"
+        style={{ x: -280 }}
+      >
+        {children}
+      </aside>
+    </>
+  );
+}
+
 export function Sidebar() {
   const pathname = usePathname();
   const { user } = useUser();
   const [open, setOpen] = useState(false);
+  const desktopRef = useRef<HTMLElement>(null);
+
+  useGSAP(() => {
+    if (!desktopRef.current) return;
+    gsap.fromTo(
+      desktopRef.current,
+      { opacity: 0, x: -20 },
+      safeAnim({ opacity: 1, x: 0, duration: 0.4, delay: 0.1, ease: "power2.out" })
+    );
+  }, { scope: desktopRef });
 
   const sidebarContent = (
     <div className="flex flex-col h-full bg-surface border-r border-border">
@@ -99,33 +171,17 @@ export function Sidebar() {
       </button>
 
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:w-64 lg:z-40">
+      <aside
+        ref={desktopRef}
+        className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:w-64 lg:z-40"
+      >
         {sidebarContent}
       </aside>
 
       {/* Mobile sidebar */}
-      <AnimatePresence>
-        {open && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setOpen(false)}
-              className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-            />
-            <motion.aside
-              initial={{ x: -280 }}
-              animate={{ x: 0 }}
-              exit={{ x: -280 }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 z-50 w-72 lg:hidden"
-            >
-              {sidebarContent}
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
+      <MobileDrawer open={open} onClose={() => setOpen(false)}>
+        {sidebarContent}
+      </MobileDrawer>
     </>
   );
 }

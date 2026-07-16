@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useGSAP } from "@gsap/react";
+import { gsap } from "gsap";
 import Link from "next/link";
 import { MODULE_CONFIG, type ModuleSlug, type DomainItem } from "@/lib/types";
 import { getApi } from "@/lib/api";
@@ -11,6 +12,7 @@ import { ErrorState, EmptyState } from "@/components/ui/empty-error";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useUser } from "@/store/user-store";
 import { Plus, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { safeAnim } from "@/lib/gsap-utils";
 
 interface Props {
   module: ModuleSlug;
@@ -41,6 +43,19 @@ export function ModuleList({ module: mod }: Props) {
   }, [api, page]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  const tbodyRef = useRef<HTMLTableSectionElement>(null);
+
+  useGSAP(() => {
+    if (!tbodyRef.current || loading || items.length === 0) return;
+    const rows = tbodyRef.current.querySelectorAll("tr");
+    if (!rows.length) return;
+    gsap.fromTo(
+      rows,
+      { opacity: 0 },
+      safeAnim({ opacity: 1, duration: 0.25, stagger: 0.03, ease: "power2.out" })
+    );
+  }, [items, loading]);
 
   const totalPages = Math.ceil(total / limit);
 
@@ -98,13 +113,10 @@ export function ModuleList({ module: mod }: Props) {
                     <th className="px-4 py-3" />
                   </tr>
                 </thead>
-                <tbody>
-                  {items.map((item, i) => (
-                    <motion.tr
+                <tbody ref={tbodyRef}>
+                  {items.map((item) => (
+                    <tr
                       key={item.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: i * 0.03 }}
                       className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
                     >
                       <td className="px-4 py-3 text-sm font-mono text-muted-foreground">
@@ -128,7 +140,7 @@ export function ModuleList({ module: mod }: Props) {
                           View <ArrowRight className="w-3 h-3" />
                         </Link>
                       </td>
-                    </motion.tr>
+                    </tr>
                   ))}
                 </tbody>
               </table>

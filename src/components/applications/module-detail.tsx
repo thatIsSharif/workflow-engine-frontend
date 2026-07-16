@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { useGSAP } from "@gsap/react";
+import { gsap } from "gsap";
 import Link from "next/link";
 import { MODULE_CONFIG, STATUS_COLORS, type ModuleSlug, type DomainItem, type WorkflowHistoryEntry, type ApplicationStatus } from "@/lib/types";
 import { getApi } from "@/lib/api";
@@ -15,6 +16,7 @@ import {
   ArrowLeft, Clock, User as UserIcon, MessageSquare, Loader2,
   CheckCircle, XCircle, Send, RotateCcw,
 } from "lucide-react";
+import { safeAnim } from "@/lib/gsap-utils";
 
 interface Props {
   module: ModuleSlug;
@@ -38,6 +40,27 @@ const actionColors: Record<string, string> = {
   CONFIRM: "bg-emerald-500 hover:bg-emerald-600",
   SIGN: "bg-teal-500 hover:bg-teal-600",
 };
+
+function ActionErrorAlert({ error }: { error: string | null }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    if (!error || !ref.current) return;
+    gsap.fromTo(
+      ref.current,
+      { opacity: 0, y: -4 },
+      safeAnim({ opacity: 1, y: 0, duration: 0.25, ease: "power2.out" })
+    );
+  }, [error]);
+
+  if (!error) return null;
+
+  return (
+    <div ref={ref} className="text-sm text-danger bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">
+      {error}
+    </div>
+  );
+}
 
 export function ModuleDetail({ module: mod, id }: Props) {
   const config = MODULE_CONFIG[mod];
@@ -113,18 +136,40 @@ export function ModuleDetail({ module: mod, id }: Props) {
     );
   }
 
+  const historyRef = useRef<HTMLDivElement>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
+
+  const [dataReady, setDataReady] = useState(false);
+
+  useGSAP(() => {
+    if (!dataReady || !historyRef.current) return;
+    const items = historyRef.current.querySelectorAll(".history-item");
+    if (!items.length) return;
+    gsap.fromTo(
+      items,
+      { opacity: 0, x: -12 },
+      safeAnim({ opacity: 1, x: 0, duration: 0.35, stagger: 0.08, ease: "power2.out" })
+    );
+  }, [dataReady]);
+
+  useGSAP(() => {
+    if (!dataReady || !actionsRef.current) return;
+    const btns = actionsRef.current.querySelectorAll(".action-btn");
+    if (!btns.length) return;
+    gsap.fromTo(
+      btns,
+      { opacity: 0, y: 6 },
+      safeAnim({ opacity: 1, y: 0, duration: 0.25, stagger: 0.04, ease: "power2.out" })
+    );
+  }, [dataReady, actions]);
+
+  useEffect(() => {
+    if (!loading && item) setDataReady(true);
+  }, [loading, item]);
+
   const fields = Object.entries(item).filter(
     ([k]) => !["id", "status", "version", "created_by", "created_at", "updated_at"].includes(k)
   );
-
-  const historyItem = {
-    hidden: { opacity: 0, x: -12 },
-    visible: (i: number) => ({
-      opacity: 1,
-      x: 0,
-      transition: { delay: i * 0.08, type: "spring" as const, stiffness: 120, damping: 14 },
-    }),
-  };
 
   return (
     <PageTransition>
@@ -205,18 +250,11 @@ export function ModuleDetail({ module: mod, id }: Props) {
             {history.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No history yet</p>
             ) : (
-              <div className="relative pl-6 border-l-2 border-border space-y-6">
-                {[...history].reverse().map((entry, i) => {
+              <div ref={historyRef} className="relative pl-6 border-l-2 border-border space-y-6">
+                {[...history].reverse().map((entry) => {
                   const Icon = actionIcons[entry.action] || MessageSquare;
                   return (
-                    <motion.div
-                      key={entry.id}
-                      custom={i}
-                      variants={historyItem}
-                      initial="hidden"
-                      animate="visible"
-                      className="relative"
-                    >
+                    <div key={entry.id} className="history-item relative">
                       <div className="absolute -left-[29px] w-6 h-6 rounded-full bg-surface border-2 border-border flex items-center justify-center">
                         <Icon className="w-3 h-3 text-muted-foreground" />
                       </div>
@@ -241,7 +279,7 @@ export function ModuleDetail({ module: mod, id }: Props) {
                           <span>{new Date(entry.timestamp).toLocaleString()}</span>
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
@@ -261,14 +299,14 @@ export function ModuleDetail({ module: mod, id }: Props) {
             ) : actions.length === 0 ? (
               <p className="text-sm text-muted-foreground">No actions available for your role.</p>
             ) : (
-              <div className="space-y-3">
+              <div ref={actionsRef} className="space-y-3">
                 {actions.map((action) => {
                   const Icon = actionIcons[action] || Send;
                   const colorClass = actionColors[action] || "bg-primary hover:opacity-90";
                   const isActive = actingAction === action;
 
                   return (
-                    <div key={action}>
+                    <div key={action} className="action-btn">
                       <button
                         onClick={() => handleAction(action)}
                         disabled={actingAction !== null}
@@ -295,18 +333,7 @@ export function ModuleDetail({ module: mod, id }: Props) {
                   />
                 </div>
 
-                <AnimatePresence>
-                  {actionError && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      className="text-sm text-danger bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2"
-                    >
-                      {actionError}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <ActionErrorAlert error={actionError} />
               </div>
             )}
           </div>

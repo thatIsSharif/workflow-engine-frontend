@@ -1,29 +1,46 @@
-import { motion } from "framer-motion";
+"use client";
+
+import { useRef } from "react";
+import { useGSAP } from "@gsap/react";
+import { gsap } from "gsap";
 import { FileX, AlertTriangle } from "lucide-react";
+import { safeAnim } from "@/lib/gsap-utils";
 
 export function EmptyState({ title, description }: { title: string; description?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    gsap.fromTo(
+      ref.current,
+      { opacity: 0, y: 10 },
+      safeAnim({ opacity: 1, y: 0, duration: 0.35, ease: "power2.out" })
+    );
+  }, { scope: ref });
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center justify-center py-16 text-center"
-    >
+    <div ref={ref} className="flex flex-col items-center justify-center py-16 text-center">
       <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
         <FileX className="w-8 h-8 text-muted-foreground" />
       </div>
       <h3 className="text-lg font-semibold text-foreground">{title}</h3>
       {description && <p className="mt-1 text-sm text-muted-foreground max-w-sm">{description}</p>}
-    </motion.div>
+    </div>
   );
 }
 
 export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    gsap.fromTo(
+      ref.current,
+      { opacity: 0, y: 10 },
+      safeAnim({ opacity: 1, y: 0, duration: 0.35, ease: "power2.out" })
+    );
+  }, { scope: ref });
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center justify-center py-16 text-center"
-    >
+    <div ref={ref} className="flex flex-col items-center justify-center py-16 text-center">
       <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
         <AlertTriangle className="w-8 h-8 text-danger" />
       </div>
@@ -37,6 +54,6 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
           Try again
         </button>
       )}
-    </motion.div>
+    </div>
   );
 }

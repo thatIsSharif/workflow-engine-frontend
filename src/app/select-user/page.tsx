@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { useGSAP } from "@gsap/react";
+import { gsap } from "gsap";
 import { usersApi } from "@/lib/api";
 import { useUser } from "@/store/user-store";
 import type { User } from "@/lib/types";
@@ -10,6 +11,7 @@ import { PageTransition } from "@/components/ui/page-transition";
 import { Skeleton } from "@/components/ui/loading";
 import { ErrorState } from "@/components/ui/empty-error";
 import { UserCircle, ArrowRight, Check } from "lucide-react";
+import { safeAnim } from "@/lib/gsap-utils";
 
 export default function SelectUserPage() {
   const router = useRouter();
@@ -32,6 +34,8 @@ export default function SelectUserPage() {
     setTimeout(() => router.push("/"), 200);
   };
 
+  const listRef = useRef<HTMLDivElement>(null);
+
   if (loading) {
     return (
       <PageTransition>
@@ -50,6 +54,15 @@ export default function SelectUserPage() {
 
   if (error) return <PageTransition><ErrorState message={error} /></PageTransition>;
 
+  useGSAP(() => {
+    if (!listRef.current || users.length === 0) return;
+    gsap.fromTo(
+      listRef.current.children,
+      { opacity: 0, y: 8 },
+      safeAnim({ opacity: 1, y: 0, duration: 0.3, stagger: 0.04, ease: "power2.out" })
+    );
+  }, [users]);
+
   return (
     <PageTransition>
       <div className="max-w-2xl mx-auto">
@@ -63,16 +76,13 @@ export default function SelectUserPage() {
           </p>
         </div>
 
-        <div className="space-y-2">
-          {users.map((u, i) => {
+        <div ref={listRef} className="space-y-2">
+          {users.map((u) => {
             const isSelected = currentUser?.id === u.id;
             const isSelecting = selecting === u.id;
             return (
-              <motion.button
+              <button
                 key={u.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04 }}
                 onClick={() => handleSelect(u)}
                 disabled={isSelecting}
                 className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all text-left ${
@@ -91,7 +101,7 @@ export default function SelectUserPage() {
                   <div className="text-sm text-muted-foreground capitalize">{u.role}</div>
                 </div>
                 <ArrowRight className={`w-4 h-4 transition-all ${isSelected ? "text-primary" : "text-muted-foreground opacity-0 group-hover:opacity-100"}`} />
-              </motion.button>
+              </button>
             );
           })}
         </div>

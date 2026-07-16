@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useGSAP } from "@gsap/react";
+import { gsap } from "gsap";
 import Link from "next/link";
 import { dashboardApi } from "@/lib/api";
 import { MODULE_CONFIG, STATUS_COLORS, type DashboardSummary, type RecentActivityEntry, type ModuleSlug } from "@/lib/types";
@@ -11,9 +12,10 @@ import { ErrorState, EmptyState } from "@/components/ui/empty-error";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useUser } from "@/store/user-store";
 import {
-  LayoutDashboard, FileCheck, FileText, DollarSign, Home, XCircle,
+  FileCheck, FileText, DollarSign, Home, XCircle,
   Clock, ArrowUpRight,
 } from "lucide-react";
+import { safeAnim } from "@/lib/gsap-utils";
 
 const moduleCards: { slug: ModuleSlug; color: string; icon: React.ElementType }[] = [
   { slug: "noc", color: "bg-blue-500/10 text-blue-600", icon: FileCheck },
@@ -48,6 +50,12 @@ export default function DashboardPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  const cardsRef = useRef<HTMLDivElement>(null);
+  const statusRef = useRef<HTMLDivElement>(null);
+  const activityRef = useRef<HTMLDivElement>(null);
+
+  const [dataReady, setDataReady] = useState(false);
+
   if (loading) {
     return (
       <PageTransition>
@@ -79,6 +87,35 @@ export default function DashboardPage() {
     }
   }
 
+  useGSAP(() => {
+    if (!dataReady) return;
+    if (cardsRef.current) {
+      gsap.fromTo(
+        cardsRef.current.children,
+        { opacity: 0, y: 12 },
+        safeAnim({ opacity: 1, y: 0, duration: 0.35, stagger: 0.05, ease: "power2.out" })
+      );
+    }
+    if (statusRef.current) {
+      gsap.fromTo(
+        statusRef.current.children,
+        { opacity: 0, scale: 0.9 },
+        safeAnim({ opacity: 1, scale: 1, duration: 0.3, stagger: 0.04, ease: "back.out(1.3)" })
+      );
+    }
+    if (activityRef.current) {
+      gsap.fromTo(
+        activityRef.current.children,
+        { opacity: 0, x: -8 },
+        safeAnim({ opacity: 1, x: 0, duration: 0.3, stagger: 0.03, ease: "power2.out" })
+      );
+    }
+  }, [dataReady]);
+
+  useEffect(() => {
+    if (!loading && summary) setDataReady(true);
+  }, [loading, summary]);
+
   return (
     <PageTransition>
       <div className="flex items-center justify-between mb-6">
@@ -90,17 +127,12 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-        {moduleCards.map(({ slug, color, icon: Icon }, idx) => {
+      <div ref={cardsRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        {moduleCards.map(({ slug, color, icon: Icon }) => {
           const config = MODULE_CONFIG[slug];
           const count = moduleCounts[config.entity] || 0;
           return (
-            <motion.div
-              key={slug}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
-            >
+            <div key={slug}>
               <Link
                 href={`/${slug}`}
                 className="block bg-surface rounded-xl border border-border p-5 hover:shadow-md hover:border-primary/20 transition-all group"
@@ -114,7 +146,7 @@ export default function DashboardPage() {
                   <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </Link>
-            </motion.div>
+            </div>
           );
         })}
       </div>
@@ -122,17 +154,15 @@ export default function DashboardPage() {
       {Object.keys(statusCounts).length > 0 && (
         <div className="mb-8">
           <h2 className="text-lg font-semibold mb-3">Status Overview</h2>
-          <div className="flex flex-wrap gap-2">
+          <div ref={statusRef} className="flex flex-wrap gap-2">
             {Object.entries(statusCounts).map(([status, count]) => (
-              <motion.span
+              <span
                 key={status}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium border ${STATUS_COLORS[status] || "bg-gray-100 text-gray-700 border-gray-300"}`}
               >
                 {status}
                 <span className="font-bold">{count}</span>
-              </motion.span>
+              </span>
             ))}
           </div>
         </div>
@@ -146,14 +176,9 @@ export default function DashboardPage() {
         {activity.length === 0 ? (
           <EmptyState title="No activity yet" description="Workflow actions will appear here" />
         ) : (
-          <div className="space-y-2">
-            {activity.map((entry, i) => (
-              <motion.div
-                key={entry.id}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.03 }}
-              >
+          <div ref={activityRef} className="space-y-2">
+            {activity.map((entry) => (
+              <div key={entry.id}>
                 <Link
                   href={`/${entry.entity.toLowerCase()}/${entry.entity_id}`}
                   className="flex items-center gap-4 bg-surface rounded-xl border border-border p-4 hover:border-primary/20 hover:shadow-sm transition-all"
@@ -171,7 +196,7 @@ export default function DashboardPage() {
                     {new Date(entry.timestamp).toLocaleString()}
                   </div>
                 </Link>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}

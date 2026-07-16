@@ -1,14 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { useGSAP } from "@gsap/react";
+import { gsap } from "gsap";
 import { MODULE_CONFIG, type ModuleSlug, type DomainItem } from "@/lib/types";
 import { getApi } from "@/lib/api";
 import { useUser } from "@/store/user-store";
 import { PageTransition } from "@/components/ui/page-transition";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { safeAnim } from "@/lib/gsap-utils";
+
+function ErrorAlert({ error }: { error: string | null }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    if (!error || !ref.current) return;
+    gsap.fromTo(
+      ref.current,
+      { opacity: 0, y: -4 },
+      safeAnim({ opacity: 1, y: 0, duration: 0.25, ease: "power2.out" })
+    );
+  }, [error]);
+
+  if (!error) return null;
+
+  return (
+    <div ref={ref} className="text-sm text-danger bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">
+      {error}
+    </div>
+  );
+}
 
 interface Props {
   module: ModuleSlug;
@@ -97,15 +120,7 @@ export function ModuleCreate({ module: mod, fields }: Props) {
             </div>
           ))}
 
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-sm text-danger bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2"
-            >
-              {error}
-            </motion.div>
-          )}
+          <ErrorAlert error={error} />
 
           <button
             type="submit"
