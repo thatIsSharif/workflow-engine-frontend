@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question 12 - Expression Output</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px 50px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            max-width: 400px;
+        }
+        .expression {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        .equals {
+            font-size: 2rem;
+            color: #888;
+            margin-bottom: 10px;
+        }
+        .result {
+            font-size: 4rem;
+            font-weight: 800;
+            color: #667eea;
+            margin: 15px 0;
+        }
+        .steps {
+            font-size: 0.95rem;
+            color: #777;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="expression">12 + 5 + 1 × 6 + 1</div>
+        <div class="equals">=</div>
+        <div class="result" id="result"></div>
+        <div class="steps" id="steps"></div>
+    </div>
+    <script>
+        const result = 12 + 5 + 1 * 6 + 1;
+        document.getElementById('result').textContent = result;
+        document.getElementById('steps').innerHTML =
+            'Step: 1 × 6 = 6 → 12 + 5 + 6 + 1 = <strong>' + result + '</strong>';
+    </script>
+</body>
+</html>
